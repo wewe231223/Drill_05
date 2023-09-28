@@ -79,6 +79,17 @@ class Character:
 
 
 
+class Arrow:
+    def __init__(self,path : str,x : int, y : int):
+        self.Object = load_image(path)
+        self.x = x
+        self.y = y
+
+    def Render(self):
+        self.Object.draw(self.x,self.y)
+
+
+
 def HandleEvent(Events = List[Any]):
     global Running
 
@@ -108,6 +119,7 @@ MainCharacter.Behavior("Idle")
 BackGround = load_image("TUK_GROUND.png")
 
 
+ar = Arrow("hand_arrow.png",200,200)
 
 
 Events = []
@@ -118,6 +130,7 @@ while Running:
     BackGround.draw(BackGround_Width // 2, BackGround_Height // 2)
 
     MainCharacter.Render(4)
+    ar.Render()
 
     delay(0.05)
     HandleEvent(Events)
