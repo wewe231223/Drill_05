@@ -10,6 +10,7 @@ BackGround_Width, BackGround_Height = 1280, 1024
 
 open_canvas(BackGround_Width,BackGround_Height)
 
+# Drill05 2020182009 김승범 
 
 class ImageObject:
     def __init__(self, path: str, frame: int, Width: int, Height: int):
@@ -59,6 +60,7 @@ class Character:
         self.Images[BehaviorName] = Img
 
     def Behavior(self,BehaviorName : str):
+        self.FrameCount = 0
         self.CurrentBehavior = BehaviorName
         self.Object = load_image(self.Images[BehaviorName].Path)
 
