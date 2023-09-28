@@ -2,6 +2,7 @@ from typing import List, Any
 
 from pico2d import *
 from enum import Enum, auto
+from random import randint
 
 
 Running = True
@@ -22,6 +23,16 @@ class BehaviorType(Enum):
     Idle = auto()
     Run = auto()
 
+class Arrow:
+    def __init__(self,path : str,XRange : tuple , YRaage : tuple):
+        self.Object = load_image(path)
+        self.x = randint(XRange[0],XRange[1])
+        self.y = randint(YRaage[0],YRaage[1])
+
+    def Render(self):
+        self.Object.draw(self.x,self.y)
+
+
 
 class Character:
     def __init__(self):
@@ -29,17 +40,68 @@ class Character:
         self.Object : pico2d.Image
         self.CurrentBehavior = BehaviorType.Idle.name
         self.FrameCount = 0
+
         self.IsComposite = False
+        self.IsDestined = False
 
         self.x = 100
         self.y = 100
+
+        self.OldX = 0
+        self.OldY = 0
+
+        self.T = 0.0
+
+
 
 
     def Resister(self, BehaviorName: str, Img: ImageObject):
         self.Images[BehaviorName] = Img
 
     def Behavior(self,BehaviorName : str):
+        self.CurrentBehavior = BehaviorName
         self.Object = load_image(self.Images[BehaviorName].Path)
+
+
+    def MoveToward(self,arrow : Arrow):
+        if not self.IsDestined:
+            self.IsDestined = True
+            self.OldX = self.x
+            self.OldY = self.y
+            self.Behavior("Run")
+
+
+        x2 = arrow.x
+        y2 = arrow.y
+
+
+        if self.x > x2:
+            self.IsComposite = True
+        else:
+            self.IsComposite = False
+
+
+        if 0.0 <= self.T < 0.2:
+            self.T += 0.01
+        elif 0.2 <= self.T < 0.8:
+            self.T += 0.05
+        elif 0.8 <= self.T < 1.0:
+            self.T += 0.01
+
+
+
+
+        self.x  = (1-self.T)*self.OldX + self.T * x2
+        self.y  = (1-self.T)*self.OldY + self.T * y2
+
+        if self.T >= 1:
+            self.T = 0
+            self.IsDestined = False
+            self.OldX = 0
+            self.OldY = 0
+            return True
+
+        return False
 
     def Render(self,Scale = int):
         self.FrameCount = (self.FrameCount + 1) % self.Images[self.CurrentBehavior].Frame
@@ -79,15 +141,6 @@ class Character:
 
 
 
-class Arrow:
-    def __init__(self,path : str,x : int, y : int):
-        self.Object = load_image(path)
-        self.x = x
-        self.y = y
-
-    def Render(self):
-        self.Object.draw(self.x,self.y)
-
 
 
 def HandleEvent(Events = List[Any]):
@@ -119,7 +172,7 @@ MainCharacter.Behavior("Idle")
 BackGround = load_image("TUK_GROUND.png")
 
 
-ar = Arrow("hand_arrow.png",200,200)
+ar = Arrow("hand_arrow.png",(0,1280),(0,1024))
 
 
 Events = []
@@ -128,6 +181,10 @@ while Running:
     clear_canvas()
     Events = get_events()
     BackGround.draw(BackGround_Width // 2, BackGround_Height // 2)
+
+
+    if MainCharacter.MoveToward(ar):
+        ar = Arrow("hand_arrow.png",(0,1280),(0,1024))
 
     MainCharacter.Render(4)
     ar.Render()
